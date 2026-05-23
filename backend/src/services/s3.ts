@@ -47,6 +47,7 @@ export async function uploadToS3(filePath: string, objectKey: string): Promise<s
       Key: objectKey,
       Body: fileBuffer,
       ContentType: 'video/mp4',
+      ACL: 'public-read',
     });
 
     console.log(`[S3] Uploading ${objectKey} to bucket ${BUCKET_NAME}...`);
