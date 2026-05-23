@@ -357,21 +357,36 @@ STRICTLY FORBIDDEN:
 - custom shaders
 - unsupported renderer tricks
 
-5. ERROR PREVENTION RULES
+5. ERROR PREVENTION RULES (READ CAREFULLY)
 
 Before producing code, internally verify:
 
-A. Every object referenced exists
-B. Every variable is initialized before use
-C. No animation references deleted objects
-D. All imports are present
-E. No unsupported methods are used
-F. No invalid transformations exist
-G. Graphs use valid x_range/y_range
-H. Text positioning is valid
-I. No attribute access on unsupported properties
-J. Code executes on Manim Community Edition
-K. NO MathTex OR Tex IS USED ANYWHERE
+A. \`self.play()\` ACCEPTS ONLY ANIMATIONS!
+   - CORRECT: \`self.play(Create(my_dot), Write(my_text))\`
+   - FATAL ERROR: \`self.play(Dot(my_dot))\` -> Dot is a Mobject, not an animation!
+   - FATAL ERROR: \`self.play(my_text)\` -> my_text is a Mobject, not an animation!
+   - ALWAYS wrap mobjects in animations like Create(), Write(), FadeIn(), or FadeOut() inside self.play().
+
+B. DO NOT PASS MOBJECTS AS COORDINATES.
+   - CORRECT: \`Dot(point=RIGHT)\` or \`Dot(point=[1, 2, 0])\`
+   - FATAL ERROR: \`Dot(point=other_dot)\` -> A Dot expects an [x, y, z] array, not another Mobject!
+   - To get a mobject's center, use \`other_dot.get_center()\`.
+
+C. MOBJECT INITIALIZATION
+   - Geometry (Dot, Line, Circle) should be animated with \`Create()\`
+   - Text (Text) should be animated with \`Write()\`
+   - Never instantiate a Mobject inside \`self.play()\` without wrapping it in an animation.
+
+D. STRICTLY BANNED METHODS / ATTRIBUTES
+   - \`ShowCreation\` (Use \`Create\` instead)
+   - \`get_axis_labels()\` (Crashes without LaTeX. Manually position Text instead)
+   - \`width\` and \`height\` arguments in \`Axes()\` (Use \`x_length\` and \`y_length\`)
+   - \`MathTex\` and \`Tex\` (LaTeX is completely disabled. Use \`Text\` only)
+
+E. NO UNDOCUMENTED ASSUMPTIONS
+   - Every object referenced must be assigned to a variable first.
+   - All imports must be exactly \`from manim import *\`. No other libraries.
+   - Graphs must use valid x_range/y_range arrays: \`x_range=[min, max, step]\`
 
 6. LAYOUT SAFETY
 
