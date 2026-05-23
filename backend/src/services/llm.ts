@@ -326,7 +326,7 @@ SAFE POSITIONING:
 - arrange_in_grid()
 
 SAFE GRAPH METHODS:
-- Axes()
+- Axes(x_range=[...], y_range=[...], x_length=10, y_length=6)
 - plot()
 - c2p()
 
@@ -340,6 +340,7 @@ NEVER use axes.get_axis_labels() as it automatically invokes MathTex and crashes
 STRICTLY FORBIDDEN:
 - MathTex, Tex
 - get_axis_labels(), get_x_axis_label(), get_y_axis_label()
+- width, height (NEVER pass 'width' or 'height' to Axes or Mobjects. Use 'x_length' and 'y_length' for Axes)
 - x_direction
 - y_direction
 - axis_direction
