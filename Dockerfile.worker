@@ -18,9 +18,6 @@ COPY workers/ ./workers/
 COPY backend/src/ ./backend/src/
 COPY backend/tsconfig.json ./backend/
 
-# Build the backend TypeScript code so dist/index.js is created
-RUN cd backend && npm run build
-
 # The worker expects temp to be in backend/temp relative to where it runs
 RUN mkdir -p backend/temp backend/generations backend/output backend/data
 

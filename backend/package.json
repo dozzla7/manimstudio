@@ -6,7 +6,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "start:railway": "concurrently \"npm start\" \"tsx ../workers/worker.ts\""
+    "start:railway": "concurrently \"tsx src/index.ts\" \"tsx ../workers/worker.ts\""
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
