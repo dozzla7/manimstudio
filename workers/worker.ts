@@ -61,6 +61,9 @@ async function processQueue() {
           if (renderResult.success) {
             freshProject.scenes[0].status = 'completed';
             freshProject.scenes[0].videoUrl = renderResult.videoPath;
+            if (renderResult.s3Url) {
+              freshProject.scenes[0].s3Url = renderResult.s3Url;
+            }
             freshProject.status = 'completed';
             console.log(`[Worker] ✅ Project ${projectId} completed successfully!`);
           } else {

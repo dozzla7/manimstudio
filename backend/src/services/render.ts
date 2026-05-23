@@ -21,6 +21,7 @@ async function ensureDirectories() {
 export interface RenderResult {
   success: boolean;
   videoPath?: string;
+  s3Url?: string;
   error?: string;
   duration?: number;
 }
@@ -133,25 +134,19 @@ export async function renderManimCode(
     
     console.log(`[Render] Completed render for scene ${sceneId} in ${duration}s. Uploading to S3...`);
     
-    // Upload to S3
+    // Upload to S3 (in the background, don't delete local file)
     const s3Url = await uploadToS3(outputPath, outputFileName);
-    
-    // Default to local path if S3 fails, but prefer S3 URL
-    const finalVideoPath = s3Url || `/project/video/${outputFileName}`;
     
     if (s3Url) {
       console.log(`[Render] Successfully uploaded to S3: ${s3Url}`);
-      // Clean up local temp files to save disk space on Railway since it's now on S3
-      try {
-         await unlink(outputPath);
-      } catch(e) {
-         console.warn(`[Render] Failed to clean up local file ${outputPath}`);
-      }
+    } else {
+      console.warn(`[Render] Failed to upload to S3, but local file is ready.`);
     }
     
     return {
       success: true,
-      videoPath: finalVideoPath,
+      videoPath: `/project/video/${outputFileName}`,
+      s3Url: s3Url || undefined,
       duration,
     };
     

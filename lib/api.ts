@@ -50,6 +50,7 @@ export interface Scene {
   manimCode: string;
   status: 'pending' | 'rendering' | 'completed' | 'failed';
   videoUrl?: string;
+  s3Url?: string;
   thumbnailUrl?: string;
   error?: string;
 }
