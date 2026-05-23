@@ -55,11 +55,12 @@ const startServer = async () => {
   serve({
     fetch: app.fetch,
     port,
+    hostname: '0.0.0.0', // Ensure it binds to all interfaces for Railway
   });
   
   console.log(`\n🚀 Manim Studio Backend`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-  console.log(`📡 API Server: http://localhost:${port}`);
+  console.log(`📡 API Server: http://0.0.0.0:${port}`);
   console.log(`🤖 LLM Provider: OpenRouter API`);
   console.log(`📊 Model: ${process.env.OPENROUTER_MODEL || 'openrouter/owl-alpha'}`);
   console.log(`🔑 API Key: ${process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY !== 'your_openrouter_api_key_here' ? '✅ Configured' : '❌ Missing (.env)'}`);
