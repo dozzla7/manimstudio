@@ -3,6 +3,7 @@ import { spawn } from 'child_process';
 import { mkdir, writeFile, readFile, unlink, rmdir, readdir, stat } from 'fs/promises';
 import { existsSync, readFileSync } from 'fs';
 import path from 'path';
+import { uploadToS3 } from './s3';
 
 const OUTPUT_DIR = path.join(process.cwd(), 'generations');
 const TEMP_DIR = path.join(process.cwd(), 'temp');
@@ -130,11 +131,27 @@ export async function renderManimCode(
     const videoData = await readFile(videoFile);
     await writeFile(outputPath, videoData);
     
-    console.log(`[Render] Completed render for scene ${sceneId} in ${duration}s`);
+    console.log(`[Render] Completed render for scene ${sceneId} in ${duration}s. Uploading to S3...`);
+    
+    // Upload to S3
+    const s3Url = await uploadToS3(outputPath, outputFileName);
+    
+    // Default to local path if S3 fails, but prefer S3 URL
+    const finalVideoPath = s3Url || `/project/video/${outputFileName}`;
+    
+    if (s3Url) {
+      console.log(`[Render] Successfully uploaded to S3: ${s3Url}`);
+      // Clean up local temp files to save disk space on Railway since it's now on S3
+      try {
+         await unlink(outputPath);
+      } catch(e) {
+         console.warn(`[Render] Failed to clean up local file ${outputPath}`);
+      }
+    }
     
     return {
       success: true,
-      videoPath: `/project/video/${outputFileName}`,
+      videoPath: finalVideoPath,
       duration,
     };
     
