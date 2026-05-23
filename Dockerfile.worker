@@ -1,0 +1,32 @@
+FROM manimcommunity/manim:latest
+
+USER root
+
+# Install Node.js
+RUN apt-get update && apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
+
+WORKDIR /app
+
+# We need the backend package.json to install tsx and other dependencies
+COPY backend/package*.json ./backend/
+RUN cd backend && npm ci
+
+# Copy the worker and necessary backend shared code
+COPY workers/ ./workers/
+COPY backend/src/ ./backend/src/
+
+# The worker expects temp to be in backend/temp relative to where it runs
+RUN mkdir -p backend/temp backend/generations backend/output backend/data
+
+# Give permissions to manimuser
+RUN chown -R manimuser:manimuser /app
+
+USER manimuser
+
+# Set workdir to backend so process.cwd() resolves to backend/ where projects.json lives
+WORKDIR /app/backend
+
+# Run the worker using tsx
+CMD ["node", "./node_modules/tsx/dist/cli.mjs", "../workers/worker.ts"]

@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    volumes:
+      # Share the backend/data volume so projects.json is shared between backend and worker
+      - shared_data:/app/data
+      # Share temp and output directories for video files
+      - shared_temp:/app/temp
+      - shared_output:/app/output
+      - shared_generations:/app/generations
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # Mount the same shared volumes so the worker sees the exact same projects.json and temp folders
+      - shared_data:/app/backend/data
+      - shared_temp:/app/backend/temp
+      - shared_output:/app/backend/output
+      - shared_generations:/app/backend/generations
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  shared_data:
+  shared_temp:
+  shared_output:
+  shared_generations:

@@ -23,6 +23,13 @@
 # misc
 .DS_Store
 *.pem
+.codex/
+.cursor/
+.gemini/
+.vscode/
+.zed/
+.mcp.json
+opencode.json
 
 # debug
 npm-debug.log*
@@ -39,3 +46,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Manim Studio Backend specific
+backend/.env
+backend/projects.json
+backend/temp/
+backend/generations/
+backend/output/
+backend/node_modules/
+workers/.env

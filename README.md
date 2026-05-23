@@ -1,36 +1,204 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Manim Studio
 
-## Getting Started
+AI-powered educational video generator that creates Manim animations from natural language descriptions.
 
-First, run the development server:
+## Overview
+
+Manim Studio transforms text prompts into mathematical visualizations in the style of 3Blue1Brown. Built with:
+
+- **Frontend**: Next.js 16, React 19, Tailwind CSS 4
+- **Backend**: Hono (Node.js), TypeScript
+- **AI**: OpenRouter API (Claude 3.5 Sonnet / GPT-4o)
+- **Rendering**: Manim (Python, Docker-isolated)
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- Python 3.10+ (for Manim rendering, coming soon)
+- Docker (for isolated rendering, coming soon)
+
+### 1. Install Dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Install frontend dependencies
+npm install
+
+# Install backend dependencies
+cd backend && npm install && cd ..
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Or use the convenience script:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run install:all
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Configure Environment
 
-## Learn More
+Create a `.env.local` file in the root:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create a `.env` file in the `backend/` directory:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+OPENROUTER_API_KEY=your-openrouter-api-key-here
+PORT=3001
+```
 
-## Deploy on Vercel
+Get your OpenRouter API key at [openrouter.ai/keys](https://openrouter.ai/keys).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 3. Run Development Servers
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Option A: Run both simultaneously**
+
+```bash
+npm run dev:all
+```
+
+**Option B: Run separately**
+
+```bash
+# Terminal 1 - Frontend
+npm run dev
+
+# Terminal 2 - Backend
+npm run dev:backend
+```
+
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
+
+## Project Structure
+
+```
+animation/
+├── app/                    # Next.js App Router
+│   ├── page.tsx           # Landing page with prompt input
+│   ├── project/[id]/      # Project workspace (real-time status)
+│   └── layout.tsx
+│
+├── components/
+│   └── ui/                # Reusable UI components
+│       ├── Button.tsx
+│       ├── Card.tsx
+│       ├── Textarea.tsx
+│       └── ...
+│
+├── lib/
+│   ├── types.ts           # Shared TypeScript types
+│   └── api.ts             # Frontend API client
+│
+├── backend/               # Hono API server
+│   ├── src/
+│   │   ├── index.ts       # Server entry point
+│   │   ├── routes/
+│   │   │   ├── generate.ts
+│   │   │   └── project.ts
+│   │   └── services/
+│   │       └── llm.ts     # OpenRouter integration
+│   └── package.json
+│
+├── prompts/               # Prompt engineering assets
+│   ├── system.md          # Prompt guidelines
+│   └── scenes/            # Few-shot examples
+│
+└── workers/               # Python render workers (coming soon)
+```
+
+## API Endpoints
+
+### POST /generate
+
+Create a new video generation job.
+
+```json
+{
+  "prompt": "Explain derivatives visually...",
+  "options": {
+    "style": "3blue1brown",
+    "quality": "low",
+    "duration": 60
+  }
+}
+```
+
+Response:
+```json
+{
+  "projectId": "abc123def456",
+  "message": "Video generation started..."
+}
+```
+
+### GET /project/:id
+
+Get project status and progress.
+
+Response:
+```json
+{
+  "project": {
+    "id": "abc123def456",
+    "status": "rendering",
+    "scenes": [...]
+  },
+  "progress": {
+    "total": 5,
+    "completed": 2,
+    "current": "Scene 3: Tangent Line"
+  }
+}
+```
+
+## Architecture
+
+```
+User Prompt
+    ↓
+Next.js Frontend
+    ↓
+POST /generate → Hono API
+    ↓
+Planner LLM → Storyboard (scene breakdown)
+    ↓
+Scene LLM × N → Manim code for each scene
+    ↓
+(Docker) Python Worker → Render MP4
+    ↓
+Frontend displays via SSE/polling
+```
+
+## Roadmap
+
+- [x] Landing page with prompt input
+- [x] Project workspace with real-time status
+- [x] Hono backend with LLM integration
+- [ ] Docker-isolated Manim rendering
+- [ ] Redis + BullMQ for job queues
+- [ ] PostgreSQL for persistence
+- [ ] SSE for real-time updates
+- [ ] Scene preview thumbnails
+- [ ] Video composition and export
+- [ ] User authentication
+- [ ] Project history and management
+
+## Development Notes
+
+### LLM Strategy
+
+- **Storyboard**: Uses temperature 0.8 for creative scene breakdowns
+- **Code Generation**: Uses temperature 0.7 for accurate Manim code
+- **Model**: Claude 3.5 Sonnet (via OpenRouter) is best for code generation
+
+### Adding New Few-Shot Examples
+
+Add `.py` files to `prompts/scenes/` with well-documented Manim code. These are used to improve code generation quality.
+
+## License
+
+MIT
